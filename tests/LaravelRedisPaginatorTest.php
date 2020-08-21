@@ -5,6 +5,7 @@ namespace GeTracker\LaravelRedisPaginator\Tests;
 use GeTracker\LaravelRedisPaginator\Exceptions\InvalidKeyException;
 use GeTracker\LaravelRedisPaginator\LaravelRedisPaginator;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Route;
 
 class LaravelRedisPaginatorTest extends TestCase
 {
@@ -53,12 +54,38 @@ class LaravelRedisPaginatorTest extends TestCase
     }
 
     /** @test */
+    public function it_should_load_specified_page_with_func_args(): void
+    {
+        $results = $this->paginator->key('leaderboard')->paginate('page', 2);
+
+        self::assertSame(25, $results->total());
+        self::assertCount(10, $results->items());
+
+        // Ensure correct page returned
+        self::assertSame('user:16', array_key_first($results->items()));
+        self::assertSame('user:25', array_key_last($results->items()));
+    }
+
+    /** @test */
     public function it_should_set_per_page(): void
     {
         $results = $this->paginator->perPage(2)->key('leaderboard')->paginate();
 
         self::assertSame(13, $results->lastPage());
         self::assertCount(2, $results->items());
+    }
+
+    /** @test */
+    public function it_should_load_specified_page_with_func_args_and_per_page(): void
+    {
+        $results = $this->paginator->perPage(2)->key('leaderboard')->paginate('page', 8);
+
+        self::assertSame(25, $results->total());
+        self::assertCount(2, $results->items());
+
+        // Ensure correct page returned
+        self::assertSame('user:15', array_key_first($results->items()));
+        self::assertSame('user:16', array_key_last($results->items()));
     }
 
     /** @test */
@@ -75,6 +102,40 @@ class LaravelRedisPaginatorTest extends TestCase
         $results = $this->paginator->sortDesc()->key('leaderboard')->paginate();
 
         self::assertSame('user:25', array_key_first($results->items()));
+    }
+
+    /** @test */
+    public function it_should_load_page_from_request(): void
+    {
+        Route::get('/test', static function () {
+            return (new LaravelRedisPaginator())->key('leaderboard')->paginate();
+        });
+
+        // Default to page 1
+        $this->get('/test')
+            ->assertOk()
+            ->assertJson([
+                'current_page' => 1,
+                'data'         => [
+                    'user:1' => 1000,
+                    'user:2' => 2000,
+                ],
+                'per_page'     => 15,
+                'total'        => 25,
+            ]);
+
+        // Manually specify page 2
+        $this->get('/test?page=2')
+            ->assertOk()
+            ->assertJson([
+                'current_page' => 2,
+                'data'         => [
+                    'user:16' => 16000,
+                    'user:17' => 17000,
+                ],
+                'per_page'     => 15,
+                'total'        => 25,
+            ]);
     }
 
     /** @test */

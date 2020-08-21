@@ -11,20 +11,31 @@ use Illuminate\Support\Facades\Redis;
 class LaravelRedisPaginator
 {
     protected int $perPage = 15;
-    protected int $currentPage = 1;
+    protected ?int $currentPage;
     protected ?string $key;
     protected bool $asc = true;
 
-    public function paginate($pageName = 'page', ?int $page = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    /**
+     * Load a Redis sorted set into a length aware paginator
+     *
+     * @see https://redis.io/topics/data-types-intro#redis-sorted-sets
+     * @see https://laravel.com/docs/7.x/pagination#manually-creating-a-paginator
+     *
+     * @param string   $pageName
+     * @param int|null $page
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function paginate(string $pageName = 'page', ?int $page = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $this->validateArguments();
 
-        $page = $page ?: Paginator::resolveCurrentPage($pageName);
+        $page = $page ?? $this->resolveCurrentPage($pageName);
 
         $total = $this->loadTotalItems();
 
         return new LengthAwarePaginator(
-            $this->results($total),
+            $this->results($page),
             $total,
             $this->perPage
         );
@@ -33,18 +44,30 @@ class LaravelRedisPaginator
     /**
      * Load paginated results from Redis
      *
-     * @param int $total
+     * @param int $page
      *
      * @return Collection
      * @noinspection ReturnTypeCanBeDeclaredInspection
      */
-    protected function results(int $total)
+    protected function results(int $page)
     {
         // Calculate start and end positions
-        $start = ($this->currentPage - 1) * $this->perPage;
-        $end = ($this->currentPage * $this->perPage) - 1;
+        $start = ($page - 1) * $this->perPage;
+        $end = ($page * $this->perPage) - 1;
 
         return $this->loadFromRedis($start, $end);
+    }
+
+    /**
+     * Resolve current page from request or user-called method
+     *
+     * @param string $pageName
+     *
+     * @return int
+     */
+    private function resolveCurrentPage(string $pageName): int
+    {
+        return $this->currentPage ?? Paginator::resolveCurrentPage($pageName);
     }
 
     /**
