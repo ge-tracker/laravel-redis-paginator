@@ -130,16 +130,8 @@ class LaravelRedisPaginator
 
         $this->validateArguments();
 
-        $lua = <<<LUA
-return {
-    redis.call('ZRANK', KEYS[1], ARGV[1]),
-    redis.call('ZSCORE', KEYS[1], ARGV[1])
-}
-LUA;
-
-        $result = Redis::eval($lua, 1, ...[$this->key, $member]);
-
-        [$rank, $score] = $result;
+        // Run Lua script on Redis server to find the member's rank
+        [$rank, $score] = $this->queryRank($member);
 
         if ($rank === false || $score === false) {
             return null;
@@ -152,6 +144,33 @@ LUA;
             $memberRank->rank = (int)$rank;
             $memberRank->score = $score;
         });
+    }
+
+    /**
+     * Run Lua script on Redis server to find the member's rank
+     *
+     * @param string $member
+     *
+     * @return array
+     */
+    private function queryRank(string $member): array
+    {
+        // Define the Lua script
+        $lua = <<<LUA
+return {
+    redis.call(ARGV[1], KEYS[1], ARGV[2]),
+    redis.call('ZSCORE', KEYS[1], ARGV[2])
+}
+LUA;
+
+        // Build the script arguments
+        $args = [
+            $this->key,
+            $this->asc ? 'ZRANK' : 'ZREVRANK',
+            $member,
+        ];
+
+        return Redis::eval($lua, 1, ...$args);
     }
 
     private function validateArguments(): void

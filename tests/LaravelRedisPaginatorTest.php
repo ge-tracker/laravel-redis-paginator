@@ -161,6 +161,26 @@ class LaravelRedisPaginatorTest extends TestCase
     }
 
     /** @test */
+    public function it_should_find_member_rank_desc(): void
+    {
+        $rank1 = $this->paginator->sortDesc()->rank('user:7', 'leaderboard');
+        $rank2 = $this->paginator->sortDesc()->rank('user:17', 'leaderboard');
+        $rank3 = $this->paginator->sortDesc()->rank('user:23', 'leaderboard');
+        $rank4 = $this->paginator->sortDesc()->rank('user:2', 'leaderboard');
+
+        self::assertSame(2, $rank1->page);
+        self::assertSame(18, $rank1->rank);
+        self::assertSame(7000.0, $rank1->score);
+
+        self::assertSame(1, $rank2->page);
+        self::assertSame(8, $rank2->rank);
+        self::assertSame(17000.0, $rank2->score);
+
+        self::assertSame(1, $rank3->page);
+        self::assertSame(2, $rank4->page);
+    }
+
+    /** @test */
     public function it_should_throw_if_no_rank_key(): void
     {
         $this->expectException(InvalidKeyException::class);
