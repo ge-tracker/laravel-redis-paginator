@@ -1,8 +1,8 @@
 # Laravel Redis Sorted Set Paginator
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/laravel-redis-paginator.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-redis-paginator)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/spatie/laravel-redis-paginator/run-tests?label=tests)](https://github.com/spatie/laravel-redis-paginator/actions?query=workflow%3Arun-tests+branch%3Amaster)
-[![Total Downloads](https://img.shields.io/packagist/dt/spatie/laravel-redis-paginator.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-redis-paginator)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/ge-tracker/laravel-redis-paginator.svg?style=flat-square)](https://packagist.org/packages/ge-tracker/laravel-redis-paginator)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/ge-tracker/laravel-redis-paginator/Tests?label=tests)](https://github.com/ge-tracker/laravel-redis-paginator/actions?query=workflow%3Arun-tests+branch%3Amaster)
+[![Total Downloads](https://img.shields.io/packagist/dt/ge-tracker/laravel-redis-paginator.svg?style=flat-square)](https://packagist.org/packages/ge-tracker/laravel-redis-paginator)
 
 Ever wanted to display paginated sorted sets at scale? A great example of this would be a leaderboard for a game, or for a website with a large userbase. This package will create a Laravel `LengthAwarePaginator` from a Redis sorted set. As a sorted set, by definition, is always sorted, it allows a large number of records to be paginated, with very little overhead.
 
