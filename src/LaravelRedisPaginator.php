@@ -21,13 +21,15 @@ class LaravelRedisPaginator
      * @see https://redis.io/topics/data-types-intro#redis-sorted-sets
      * @see https://laravel.com/docs/7.x/pagination#manually-creating-a-paginator
      *
+     * @param string   $key
      * @param string   $pageName
      * @param int|null $page
      *
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function paginate(string $pageName = 'page', ?int $page = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function paginate(string $key, string $pageName = 'page', ?int $page = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
+        $this->key($key);
         $this->validateArguments();
 
         $page = $page ?? $this->resolveCurrentPage($pageName);
@@ -114,12 +116,18 @@ class LaravelRedisPaginator
     /**
      * Find the rank, page and score for a given member
      *
-     * @param string $member
+     * @param string      $member
+     *
+     * @param string|null $key
      *
      * @return MemberRank|null
      */
-    public function rank(string $member): ?MemberRank
+    public function rank(string $member, ?string $key = null): ?MemberRank
     {
+        if ($key) {
+            $this->key($key);
+        }
+
         $this->validateArguments();
 
         $lua = <<<LUA

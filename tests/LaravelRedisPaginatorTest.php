@@ -20,16 +20,9 @@ class LaravelRedisPaginatorTest extends TestCase
     }
 
     /** @test */
-    public function it_should_throw_exception_for_no_key(): void
-    {
-        $this->expectException(InvalidKeyException::class);
-        $this->paginator->paginate();
-    }
-
-    /** @test */
     public function it_should_load_default_per_page(): void
     {
-        $results = $this->paginator->key('leaderboard')->paginate();
+        $results = $this->paginator->paginate('leaderboard');
 
         self::assertSame(25, $results->total());
         self::assertSame(15, $results->perPage());
@@ -43,7 +36,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_load_specified_page(): void
     {
-        $results = $this->paginator->page(2)->key('leaderboard')->paginate();
+        $results = $this->paginator->page(2)->paginate('leaderboard');
 
         self::assertSame(25, $results->total());
         self::assertCount(10, $results->items());
@@ -56,7 +49,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_load_specified_page_with_func_args(): void
     {
-        $results = $this->paginator->key('leaderboard')->paginate('page', 2);
+        $results = $this->paginator->key('leaderboard')->paginate('leaderboard', 'page', 2);
 
         self::assertSame(25, $results->total());
         self::assertCount(10, $results->items());
@@ -69,7 +62,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_set_per_page(): void
     {
-        $results = $this->paginator->perPage(2)->key('leaderboard')->paginate();
+        $results = $this->paginator->perPage(2)->paginate('leaderboard');
 
         self::assertSame(13, $results->lastPage());
         self::assertCount(2, $results->items());
@@ -78,7 +71,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_load_specified_page_with_func_args_and_per_page(): void
     {
-        $results = $this->paginator->perPage(2)->key('leaderboard')->paginate('page', 8);
+        $results = $this->paginator->perPage(2)->key('leaderboard')->paginate('leaderboard', 'page', 8);
 
         self::assertSame(25, $results->total());
         self::assertCount(2, $results->items());
@@ -91,7 +84,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_sort_asc(): void
     {
-        $results = $this->paginator->sortAsc()->key('leaderboard')->paginate();
+        $results = $this->paginator->sortAsc()->paginate('leaderboard');
 
         self::assertSame('user:1', array_key_first($results->items()));
     }
@@ -99,7 +92,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_sort_desc(): void
     {
-        $results = $this->paginator->sortDesc()->key('leaderboard')->paginate();
+        $results = $this->paginator->sortDesc()->paginate('leaderboard');
 
         self::assertSame('user:25', array_key_first($results->items()));
     }
@@ -108,7 +101,7 @@ class LaravelRedisPaginatorTest extends TestCase
     public function it_should_load_page_from_request(): void
     {
         Route::get('/test', static function () {
-            return (new LaravelRedisPaginator())->key('leaderboard')->paginate();
+            return (new LaravelRedisPaginator())->paginate('leaderboard');
         });
 
         // Default to page 1
@@ -146,7 +139,9 @@ class LaravelRedisPaginatorTest extends TestCase
         $rank3 = $this->paginator->key('leaderboard')->perPage(2)->rank('user:17');
         $rank4 = $this->paginator->key('leaderboard')->perPage(2)->rank('user:2');
         $rank5 = $this->paginator->key('leaderboard')->perPage(2)->rank('user:25');
+        $rank6 = $this->paginator->rank('user:7', 'leaderboard');
         $invalid = $this->paginator->key('leaderboard')->rank('invalid-user');
+        $invalidKey = $this->paginator->key('invalid-key')->rank('invalid-user');
 
         self::assertSame(1, $rank1->page);
         self::assertSame(6, $rank1->rank);
@@ -159,8 +154,17 @@ class LaravelRedisPaginatorTest extends TestCase
         self::assertSame(9, $rank3->page);
         self::assertSame(1, $rank4->page);
         self::assertSame(13, $rank5->page);
+        self::assertSame(7000.0, $rank6->score);
 
         self::assertNull($invalid);
+        self::assertNull($invalidKey);
+    }
+
+    /** @test */
+    public function it_should_throw_if_no_rank_key(): void
+    {
+        $this->expectException(InvalidKeyException::class);
+        $this->paginator->rank('asd');
     }
 
     /**
