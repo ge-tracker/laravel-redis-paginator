@@ -88,6 +88,41 @@ class LaravelRedisPaginator
         return new Collection($items);
     }
 
+    /**
+     * Find the rank, page and score for a given member
+     *
+     * @param string $member
+     *
+     * @return MemberRank|null
+     */
+    public function rank(string $member): ?MemberRank
+    {
+        $this->validateArguments();
+
+        $lua = <<<LUA
+return {
+    redis.call('ZRANK', KEYS[1], ARGV[1]),
+    redis.call('ZSCORE', KEYS[1], ARGV[1])
+}
+LUA;
+
+        $result = Redis::eval($lua, 1, ...[$this->key, $member]);
+
+        [$rank, $score] = $result;
+
+        if ($rank === false || $score === false) {
+            return null;
+        }
+
+        $page = floor($rank / $this->perPage) + 1;
+
+        return tap(new MemberRank(), static function (MemberRank $memberRank) use ($rank, $score, $page) {
+            $memberRank->page = (int)$page;
+            $memberRank->rank = (int)$rank;
+            $memberRank->score = $score;
+        });
+    }
+
     private function validateArguments(): void
     {
         if (!isset($this->key)) {

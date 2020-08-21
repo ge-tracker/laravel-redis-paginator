@@ -77,6 +77,31 @@ class LaravelRedisPaginatorTest extends TestCase
         self::assertSame('user:25', array_key_first($results->items()));
     }
 
+    /** @test */
+    public function it_should_find_member_rank(): void
+    {
+        $rank1 = $this->paginator->key('leaderboard')->rank('user:7');
+        $rank2 = $this->paginator->key('leaderboard')->rank('user:17');
+        $rank3 = $this->paginator->key('leaderboard')->perPage(2)->rank('user:17');
+        $rank4 = $this->paginator->key('leaderboard')->perPage(2)->rank('user:2');
+        $rank5 = $this->paginator->key('leaderboard')->perPage(2)->rank('user:25');
+        $invalid = $this->paginator->key('leaderboard')->rank('invalid-user');
+
+        self::assertSame(1, $rank1->page);
+        self::assertSame(6, $rank1->rank);
+        self::assertSame(7000.0, $rank1->score);
+
+        self::assertSame(2, $rank2->page);
+        self::assertSame(16, $rank2->rank);
+        self::assertSame(17000.0, $rank2->score);
+
+        self::assertSame(9, $rank3->page);
+        self::assertSame(1, $rank4->page);
+        self::assertSame(13, $rank5->page);
+
+        self::assertNull($invalid);
+    }
+
     /**
      * Generate fake users and scores
      *
