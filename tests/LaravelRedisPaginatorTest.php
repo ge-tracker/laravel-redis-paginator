@@ -116,12 +116,12 @@ class LaravelRedisPaginatorTest extends TestCase
             ->assertOk()
             ->assertJson([
                 'current_page' => 1,
-                'data'         => [
+                'data' => [
                     'user:1' => 1000,
                     'user:2' => 2000,
                 ],
-                'per_page'     => 15,
-                'total'        => 25,
+                'per_page' => 15,
+                'total' => 25,
             ]);
 
         // Manually specify page 2
@@ -129,12 +129,12 @@ class LaravelRedisPaginatorTest extends TestCase
             ->assertOk()
             ->assertJson([
                 'current_page' => 2,
-                'data'         => [
+                'data' => [
                     'user:16' => 16000,
                     'user:17' => 17000,
                 ],
-                'per_page'     => 15,
-                'total'        => 25,
+                'per_page' => 15,
+                'total' => 25,
             ]);
     }
 
