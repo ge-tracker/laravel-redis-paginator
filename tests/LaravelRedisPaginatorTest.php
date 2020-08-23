@@ -219,11 +219,72 @@ class LaravelRedisPaginatorTest extends TestCase
 
         $results = $this->paginator->paginate('leaderboard');
 
-        self::assertCount(4, $results->items());
+        self::assertCount(14, $results->items());
         self::assertSame('Test user 1', $results[0]['name']);
         self::assertSame(1000, (int)$results[0]['score']);
         self::assertSame('Test user 5', $results[3]['name']);
         self::assertSame(5000, (int)$results[3]['score']);
+    }
+
+    /** @test */
+    public function it_should_resolve_eloquent_users_using_static_resolver_desc(): void
+    {
+        $users = factory(UserStub::class, 25)->create();
+
+        $results = $this->paginator
+            ->setModelResolver(new EloquentResolverStub())
+            ->sortDesc()
+            ->paginate('leaderboard');
+
+        self::assertCount(15, $results->items());
+
+        // Assert that the results are still in descending order, as sorted by Redis
+        self::assertSame($users[24]->name, $results[0]->name);
+        self::assertSame(25000, (int)$results[0]->score);
+        self::assertSame($users[15]->name, $results[9]->name);
+        self::assertSame(16000, (int)$results[9]->score);
+    }
+
+    /** @test */
+    public function it_should_resolve_array_users_using_static_resolver_desc(): void
+    {
+        $results = $this->paginator
+            ->setModelResolver(new ArrayResolverStub())
+            ->sortDesc()
+            ->paginate('leaderboard');
+
+        self::assertCount(15, $results->items());
+
+        // Assert that the results are still in descending order, as sorted by Redis
+        self::assertSame(25000, (int)$results[0]['score']);
+        self::assertSame(16000, (int)$results[9]['score']);
+    }
+
+    /** @test */
+    public function it_should_resolve_eloquent_with_missing_id(): void
+    {
+        $users = factory(UserStub::class, 10)->create();
+
+        // delete a user
+        UserStub::where('id', 3)->delete();
+
+        $results = $this->paginator
+            ->setModelResolver(new EloquentResolverStub())
+            ->sortAsc()
+            ->paginate('leaderboard');
+
+        self::assertCount(9, $results->items());
+    }
+
+    /** @test */
+    public function it_should_resolve_array_with_missing_id(): void
+    {
+        $results = $this->paginator
+            ->setModelResolver(new ArrayResolverStub())
+            ->sortAsc()
+            ->paginate('leaderboard');
+
+        self::assertCount(14, $results->items());
     }
 
     /**

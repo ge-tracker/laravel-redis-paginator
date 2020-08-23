@@ -29,11 +29,18 @@ abstract class AbstractResolver
     protected Collection $results;
 
     /**
-     * Reserve key mapping
+     * Model Key -> Member mapping
      *
      * @var array
      */
-    protected array $resolvedKeys;
+    protected array $resolvedKeyMembers;
+
+    /**
+     * Member -> Model Key mapping
+     *
+     * @var array
+     */
+    protected array $resolvedMemberKeys;
 
     /**
      * Resolve an array of Redis results to their respective models
@@ -56,52 +63,60 @@ abstract class AbstractResolver
 
         if ($models instanceof Collection && $models[0] instanceof Model) {
             /** @psalm-suppress InvalidReturnStatement */
-            return $this->mapEloquent($models);
+            return $this->mapModels($models, true);
         }
 
-        return new Collection($this->mapArray($models));
+        return new Collection($this->mapModels($models, false));
     }
 
     /**
      * Map scores to eloquent models
      *
      * @param Collection|Model[] $models
+     * @param bool               $eloquent
      *
      * @return Collection|Model[]
      * @psalm-suppress InvalidReturnType
      * @psalm-suppress MismatchingDocblockParamType
      */
-    private function mapEloquent(Collection $models)
+    private function mapModels($models, bool $eloquent)
     {
-        foreach ($models as $model) {
-            if (!$redisKey = $this->getRedisKey($model)) {
-                continue;
+        // Key the models by the defined key
+        $models = $this->keyModels($models);
+
+        $collection = $this->results->map(function ($score, $redisKey) use ($models, $eloquent) {
+            $eloquentKey = $this->getEloquentKey($redisKey);
+
+            if (!$eloquentKey || !$model = $models->get($eloquentKey)) {
+                return null;
             }
 
             // Set the defined score property on the model
-            $model->setRelation($this->scoreField, $this->results[$redisKey]);
-        }
+            if ($eloquent) {
+                $model->setRelation($this->scoreField, $score);
+            } else {
+                $model += [$this->scoreField => $score];
+            }
 
-        return $models;
+            return $model;
+        })->filter()->values();
+
+        return $eloquent ? $collection : $collection->toArray();
     }
 
     /**
-     * Map scores to eloquent models
+     * Key collections by the defined model key
      *
-     * @param array $models
+     * @param $array
      *
-     * @return array
+     * @return Collection
      */
-    private function mapArray(array $models): array
+    private function keyModels($array): Collection
     {
-        foreach ($models as &$model) {
-            if (!$redisKey = $this->getRedisKey($model)) {
-                continue;
-            }
+        $models = new Collection($array);
 
-            // Set the defined score property on the model
-            $model += [$this->scoreField => $this->results[$redisKey]];
-        }
+        // Key the models by the defined key
+        $models = $models->keyBy($this->modelKey);
 
         return $models;
     }
@@ -111,13 +126,27 @@ abstract class AbstractResolver
      *
      * @param $model
      *
-     * @return string|int
+     * @return string|int|null
      */
     private function getRedisKey($model)
     {
-        return $model instanceof Model
-            ? $this->resolvedKeys[$model->getAttribute($this->modelKey)]
-            : $this->resolvedKeys[$model[$this->modelKey]];
+        if ($model instanceof Model) {
+            return $this->resolvedKeyMembers[$model->getAttribute($this->modelKey)] ?? null;
+        }
+
+        return $this->resolvedKeyMembers[$model[$this->modelKey]] ?? null;
+    }
+
+    /**
+     * Get an already resolved Eloquent key
+     *
+     * @param string $key
+     *
+     * @return string|int|null
+     */
+    private function getEloquentKey(string $key)
+    {
+        return $this->resolvedMemberKeys[$key] ?? null;
     }
 
     /**
@@ -134,7 +163,8 @@ abstract class AbstractResolver
                 $resolved = $this->resolveKey($key);
 
                 // Cache the resolved key to map scores to the models
-                $this->resolvedKeys[$resolved] = $key;
+                $this->resolvedKeyMembers[$resolved] = $key;
+                $this->resolvedMemberKeys[$key] = $resolved;
 
                 return $resolved;
             })->toArray();
