@@ -92,7 +92,9 @@ In this example, we assume that you have stored your data in the following forma
 | user:2 | 200   | 2           |
 | user:3 | 300   | 3           |
 
-First, create a Redis resolver. This can be placed anywhere your application, such as `app/RedisResolvers/UserResolver.php`. 
+First, create a Redis resolver. This can be placed anywhere your application, such as `app/RedisResolvers/UserResolver.php`.  
+
+The `$modelKey` property should correspond to the key that you are using to generate your Redis members. This will generally be `id` or `uuid`. The `$scoreField` property defines the field that will be mapped onto your Eloquent model, or merged into your results array. 
 
 ```php
 <?php
@@ -134,9 +136,15 @@ You can then define `resolveModels()` that accepts an array of resolved keys to 
 Finally, we must set our model resolver before running the query:
 
 ```php
-$results = $this->paginator
+$users = $this->paginator
     ->setModelResolver(new \App\RedisResolvers\UserResolver())
     ->paginate('leaderboard');
+```
+
+We can now access our full User model, as well as the score that has been loaded from Redis:
+
+```php
+echo $users[0]->name . ' -> ' . $users[0]->score;
 ```
 
 ## Testing
