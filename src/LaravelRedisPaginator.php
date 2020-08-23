@@ -42,7 +42,12 @@ class LaravelRedisPaginator
         return new LengthAwarePaginator(
             $this->results($page),
             $total,
-            $this->perPage
+            $this->perPage,
+            $page,
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+            ]
         );
     }
 
