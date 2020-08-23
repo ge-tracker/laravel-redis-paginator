@@ -4,11 +4,17 @@ namespace GeTracker\LaravelRedisPaginator\Tests;
 
 use GeTracker\LaravelRedisPaginator\Exceptions\InvalidKeyException;
 use GeTracker\LaravelRedisPaginator\LaravelRedisPaginator;
+use GeTracker\LaravelRedisPaginator\Tests\Stubs\ArrayResolverStub;
+use GeTracker\LaravelRedisPaginator\Tests\Stubs\EloquentResolverStub;
+use GeTracker\LaravelRedisPaginator\Tests\Stubs\UserStub;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
 class LaravelRedisPaginatorTest extends TestCase
 {
+    use RefreshDatabase;
+
     private LaravelRedisPaginator $paginator;
 
     public function setUp(): void
@@ -185,6 +191,39 @@ class LaravelRedisPaginatorTest extends TestCase
     {
         $this->expectException(InvalidKeyException::class);
         $this->paginator->rank('asd');
+    }
+
+    /** @test */
+    public function it_should_resolve_eloquent_users_using_static_resolver(): void
+    {
+        $users = factory(UserStub::class, 5)->create();
+
+        $this->paginator->setModelResolver(new EloquentResolverStub());
+
+        $results = $this->paginator->paginate('leaderboard');
+
+        self::assertCount(5, $results->items());
+        self::assertInstanceOf(UserStub::class, $results[0]);
+        self::assertSame($users[0]->name, $results[0]->name);
+        self::assertSame(1000, (int)$results[0]->score);
+        self::assertSame($users[4]->name, $results[4]->name);
+        self::assertSame(5000, (int)$results[4]->score);
+    }
+
+    /** @test */
+    public function it_should_resolve_array_users_using_static_resolver(): void
+    {
+        $users = factory(UserStub::class, 5)->create();
+
+        $this->paginator->setModelResolver(new ArrayResolverStub());
+
+        $results = $this->paginator->paginate('leaderboard');
+
+        self::assertCount(4, $results->items());
+        self::assertSame('Test user 1', $results[0]['name']);
+        self::assertSame(1000, (int)$results[0]['score']);
+        self::assertSame('Test user 5', $results[3]['name']);
+        self::assertSame(5000, (int)$results[3]['score']);
     }
 
     /**

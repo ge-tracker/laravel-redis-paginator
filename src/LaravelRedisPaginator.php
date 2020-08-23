@@ -3,6 +3,7 @@
 namespace GeTracker\LaravelRedisPaginator;
 
 use GeTracker\LaravelRedisPaginator\Exceptions\InvalidKeyException;
+use GeTracker\LaravelRedisPaginator\Resolvers\AbstractResolver;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
@@ -14,6 +15,8 @@ class LaravelRedisPaginator
     protected ?int $currentPage;
     protected ?string $key;
     protected bool $asc = true;
+
+    protected ?AbstractResolver $modelResolver;
 
     /**
      * Load a Redis sorted set into a length aware paginator
@@ -87,7 +90,15 @@ class LaravelRedisPaginator
             ? Redis::zRange($this->key, $start, $end, true)
             : Redis::zRevRange($this->key, $start, $end, true);
 
-        return $this->newCollection($results);
+        $collection = $this->newCollection($results);
+
+        // Return the raw results if not resolver was defined
+        if (!isset($this->modelResolver)) {
+            return $collection;
+        }
+
+        // Resolve the results to a collection of models
+        return $this->modelResolver->resolve($collection);
     }
 
     /**
@@ -103,12 +114,12 @@ class LaravelRedisPaginator
     /**
      * Create a new Collection
      *
-     * @param array $items
+     * @param array|Collection $items
      *
      * @return Collection
      * @noinspection ReturnTypeCanBeDeclaredInspection
      */
-    protected function newCollection(array $items)
+    protected function newCollection($items)
     {
         return new Collection($items);
     }
@@ -232,6 +243,18 @@ LUA;
     public function sortDesc(): LaravelRedisPaginator
     {
         $this->asc = false;
+
+        return $this;
+    }
+
+    /**
+     * @param AbstractResolver $modelResolver
+     *
+     * @return LaravelRedisPaginator
+     */
+    public function setModelResolver(AbstractResolver $modelResolver): LaravelRedisPaginator
+    {
+        $this->modelResolver = $modelResolver;
 
         return $this;
     }

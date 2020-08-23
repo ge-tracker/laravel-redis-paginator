@@ -80,6 +80,65 @@ $users = $redisPaginator->paginate('leaderboard', 'page', 5);
 $users = $redisPaginator->paginate('leaderboard');
 ```
 
+### Resolving Eloquent models
+
+Given that Redis an in-memory data structure store, and not a relational database, it is very likely that the real data relating to your paginated data (*leaderboard*?) is not wholly stored in Redis. This data will need to be loaded once you have fetched your paginated results, and this package will handle that for you.
+
+In this example, we assume that you have stored your data in the following format:
+
+| member | score | Eloquent ID |
+| ------ | ----- | ----------- |
+| user:1 | 100   | 1           |
+| user:2 | 200   | 2           |
+| user:3 | 300   | 3           |
+
+First, create a Redis resolver. This can be placed anywhere your application, such as `app/RedisResolvers/UserResolver.php`. 
+
+```php
+<?php
+
+namespace App\RedisResolvers;
+
+use App\User;
+use GeTracker\LaravelRedisPaginator\Resolvers\AbstractResolver;
+
+class UserResolver extends AbstractResolver
+{
+    // Defaults shown below, can be omitted
+    protected $modelKey = 'id';
+    protected $scoreField = 'score';
+
+    /**
+     * Load Eloquent models
+     */
+    protected function resolveModels(array $keys)
+    {
+        return User::whereIn('id', $keys)->get();
+    }
+
+    /**
+     * Resolve a key from Redis to an Eloquent incrementing ID or UUID
+     */
+    protected function resolveKey($key)
+    {
+        return (int)str_replace('user:', '', $key);
+    }
+}
+
+```
+
+The `resolveKey()` method will take a single key (Redis member), and allow you to transform it. In the example below, we are stripping `user:` from the string, before casting it to an integer. 
+
+You can then define `resolveModels()` that accepts an array of resolved keys to be queried.
+
+Finally, we must set our model resolver before running the query:
+
+```php
+$results = $this->paginator
+    ->setModelResolver(new \App\RedisResolvers\UserResolver())
+    ->paginate('leaderboard');
+```
+
 ## Testing
 
 ``` bash
