@@ -129,7 +129,7 @@ class UserResolver extends AbstractResolver
 
 ```
 
-The `resolveKey()` method will take a single key (Redis member), and allow you to transform it. In the example below, we are stripping `user:` from the string, before casting it to an integer. 
+The `resolveKey()` method will take a single key (Redis member), and allow you to transform it. In the example above, we are stripping `user:` from the string, before casting it to an integer. 
 
 You can then define `resolveModels()` that accepts an array of resolved keys to be queried.
 
