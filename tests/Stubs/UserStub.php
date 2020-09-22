@@ -38,6 +38,6 @@ class UserStub extends Model
 
     public static function whereInTestArray(string $field, array $values)
     {
-        return array_filter(static::$users, fn($user) => in_array($user[$field], $values, true));
+        return array_filter(static::$users, fn ($user) => in_array($user[$field], $values, true));
     }
 }
