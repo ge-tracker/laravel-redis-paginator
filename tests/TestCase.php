@@ -12,7 +12,6 @@ class TestCase extends Orchestra
         parent::setUp();
 
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-        $this->withFactories(__DIR__ . '/database/factories');
     }
 
     protected function getPackageProviders($app)
@@ -30,10 +29,5 @@ class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix' => '',
         ]);
-
-        /*
-        include_once __DIR__.'/../database/migrations/create_laravel_redis_paginator_table.php.stub';
-        (new \CreatePackageTable())->up();
-        */
     }
 }

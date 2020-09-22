@@ -10,7 +10,7 @@ class EloquentResolverStub extends AbstractResolver
     protected $scoreField = 'score';
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function resolveModels(array $keys)
     {
@@ -18,7 +18,7 @@ class EloquentResolverStub extends AbstractResolver
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function resolveKey($key)
     {

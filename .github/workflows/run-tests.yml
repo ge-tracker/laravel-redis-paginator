@@ -17,7 +17,7 @@ jobs:
             stability: prefer-stable
           - laravel: 8.*
             testbench: 6.*
-            stability: prefer-lowest
+            stability: prefer-stable
 
     services:
       redis:

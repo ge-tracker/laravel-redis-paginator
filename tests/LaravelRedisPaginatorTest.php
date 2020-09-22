@@ -196,7 +196,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_resolve_eloquent_users_using_static_resolver(): void
     {
-        $users = factory(UserStub::class, 5)->create();
+        $users = UserStub::factory()->count(5)->create();
 
         $this->paginator->setModelResolver(new EloquentResolverStub());
 
@@ -213,7 +213,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_resolve_array_users_using_static_resolver(): void
     {
-        $users = factory(UserStub::class, 5)->create();
+        $users = UserStub::factory()->count(5)->create();
 
         $this->paginator->setModelResolver(new ArrayResolverStub());
 
@@ -229,7 +229,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_resolve_eloquent_users_using_static_resolver_desc(): void
     {
-        $users = factory(UserStub::class, 25)->create();
+        $users = UserStub::factory()->count(25)->create();
 
         $results = $this->paginator
             ->setModelResolver(new EloquentResolverStub())
@@ -263,7 +263,7 @@ class LaravelRedisPaginatorTest extends TestCase
     /** @test */
     public function it_should_resolve_eloquent_with_missing_id(): void
     {
-        $users = factory(UserStub::class, 10)->create();
+        $users = UserStub::factory()->count(10)->create();
 
         // delete a user
         UserStub::where('id', 3)->delete();
@@ -288,7 +288,7 @@ class LaravelRedisPaginatorTest extends TestCase
     }
 
     /**
-     * Generate fake users and scores
+     * Generate fake users and scores.
      *
      * @param int $n
      */

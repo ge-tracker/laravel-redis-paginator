@@ -7,7 +7,7 @@ use GeTracker\LaravelRedisPaginator\Resolvers\AbstractResolver;
 class ArrayResolverStub extends AbstractResolver
 {
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function resolveModels(array $keys)
     {
@@ -15,7 +15,7 @@ class ArrayResolverStub extends AbstractResolver
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function resolveKey($key)
     {

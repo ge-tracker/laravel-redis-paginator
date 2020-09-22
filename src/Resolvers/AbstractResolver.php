@@ -15,35 +15,35 @@ abstract class AbstractResolver
     protected $modelKey = 'id';
 
     /**
-     * Field to be merged into the collection of models containing the Redis result
+     * Field to be merged into the collection of models containing the Redis result.
      *
      * @var string
      */
     protected $scoreField = 'score';
 
     /**
-     * Redis results
+     * Redis results.
      *
      * @var Collection
      */
     protected Collection $results;
 
     /**
-     * Model Key -> Member mapping
+     * Model Key -> Member mapping.
      *
      * @var array
      */
     protected array $resolvedKeyMembers;
 
     /**
-     * Member -> Model Key mapping
+     * Member -> Model Key mapping.
      *
      * @var array
      */
     protected array $resolvedMemberKeys;
 
     /**
-     * Resolve an array of Redis results to their respective models
+     * Resolve an array of Redis results to their respective models.
      *
      * @param Collection $results
      *
@@ -70,7 +70,7 @@ abstract class AbstractResolver
     }
 
     /**
-     * Map scores to eloquent models
+     * Map scores to eloquent models.
      *
      * @param Collection|Model[] $models
      * @param bool               $eloquent
@@ -105,7 +105,7 @@ abstract class AbstractResolver
     }
 
     /**
-     * Key collections by the defined model key
+     * Key collections by the defined model key.
      *
      * @param $array
      *
@@ -122,7 +122,7 @@ abstract class AbstractResolver
     }
 
     /**
-     * Get an already resolved Redis key
+     * Get an already resolved Redis key.
      *
      * @param $model
      *
@@ -138,7 +138,7 @@ abstract class AbstractResolver
     }
 
     /**
-     * Get an already resolved Eloquent key
+     * Get an already resolved Eloquent key.
      *
      * @param string $key
      *
@@ -150,7 +150,7 @@ abstract class AbstractResolver
     }
 
     /**
-     * Map keys using the key resolver
+     * Map keys using the key resolver.
      *
      * @return array
      */
@@ -171,7 +171,7 @@ abstract class AbstractResolver
     }
 
     /**
-     * Load Eloquent models
+     * Load Eloquent models.
      *
      * @param array $keys
      *
@@ -180,7 +180,7 @@ abstract class AbstractResolver
     abstract protected function resolveModels(array $keys);
 
     /**
-     * Resolve a key from Redis to an Eloquent incrementing ID or UUID
+     * Resolve a key from Redis to an Eloquent incrementing ID or UUID.
      *
      * @param string $key
      *
