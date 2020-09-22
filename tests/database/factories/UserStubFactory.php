@@ -10,7 +10,7 @@ class UserStubFactory extends Factory
     protected $model = UserStub::class;
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function definition()
     {

@@ -46,7 +46,7 @@ class UserStub extends Model
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected static function newFactory()
     {
