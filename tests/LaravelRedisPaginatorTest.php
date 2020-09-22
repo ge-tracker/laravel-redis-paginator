@@ -288,7 +288,7 @@ class LaravelRedisPaginatorTest extends TestCase
     }
 
     /**
-     * Generate fake users and scores
+     * Generate fake users and scores.
      *
      * @param int $n
      */

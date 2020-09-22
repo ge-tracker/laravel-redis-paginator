@@ -30,10 +30,5 @@ class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix' => '',
         ]);
-
-        /*
-        include_once __DIR__.'/../database/migrations/create_laravel_redis_paginator_table.php.stub';
-        (new \CreatePackageTable())->up();
-        */
     }
 }

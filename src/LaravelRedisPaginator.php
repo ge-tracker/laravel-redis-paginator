@@ -19,7 +19,7 @@ class LaravelRedisPaginator
     protected ?AbstractResolver $modelResolver;
 
     /**
-     * Load a Redis sorted set into a length aware paginator
+     * Load a Redis sorted set into a length aware paginator.
      *
      * @see https://redis.io/topics/data-types-intro#redis-sorted-sets
      * @see https://laravel.com/docs/7.x/pagination#manually-creating-a-paginator
@@ -52,7 +52,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Load paginated results from Redis
+     * Load paginated results from Redis.
      *
      * @param int $page
      *
@@ -69,7 +69,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Resolve current page from request or user-called method
+     * Resolve current page from request or user-called method.
      *
      * @param string $pageName
      *
@@ -81,7 +81,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Load results from Redis as a Collection
+     * Load results from Redis as a Collection.
      *
      * @param int $start
      * @param int $end
@@ -107,7 +107,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Get count of items in a sorted set
+     * Get count of items in a sorted set.
      *
      * @return int
      */
@@ -117,7 +117,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Create a new Collection
+     * Create a new Collection.
      *
      * @param array|Collection $items
      *
@@ -130,7 +130,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Find the rank, page and score for a given member
+     * Find the rank, page and score for a given member.
      *
      * @param string      $member
      *
@@ -163,7 +163,7 @@ class LaravelRedisPaginator
     }
 
     /**
-     * Run Lua script on Redis server to find the member's rank
+     * Run Lua script on Redis server to find the member's rank.
      *
      * @param string $member
      *
@@ -172,7 +172,7 @@ class LaravelRedisPaginator
     private function queryRank(string $member): array
     {
         // Define the Lua script
-        $lua = <<<LUA
+        $lua = <<<'LUA'
 return {
     redis.call(ARGV[1], KEYS[1], ARGV[2]),
     redis.call('ZSCORE', KEYS[1], ARGV[2])
@@ -201,7 +201,7 @@ LUA;
      *
      * @return LaravelRedisPaginator
      */
-    public function perPage(int $perPage): LaravelRedisPaginator
+    public function perPage(int $perPage): self
     {
         $this->perPage = $perPage;
 
@@ -213,7 +213,7 @@ LUA;
      *
      * @return LaravelRedisPaginator
      */
-    public function key(string $key): LaravelRedisPaginator
+    public function key(string $key): self
     {
         $this->key = $key;
 
@@ -225,7 +225,7 @@ LUA;
      *
      * @return LaravelRedisPaginator
      */
-    public function page(int $currentPage): LaravelRedisPaginator
+    public function page(int $currentPage): self
     {
         $this->currentPage = $currentPage;
 
@@ -235,7 +235,7 @@ LUA;
     /**
      * @return LaravelRedisPaginator
      */
-    public function sortAsc(): LaravelRedisPaginator
+    public function sortAsc(): self
     {
         $this->asc = true;
 
@@ -245,7 +245,7 @@ LUA;
     /**
      * @return LaravelRedisPaginator
      */
-    public function sortDesc(): LaravelRedisPaginator
+    public function sortDesc(): self
     {
         $this->asc = false;
 
@@ -257,7 +257,7 @@ LUA;
      *
      * @return LaravelRedisPaginator
      */
-    public function setModelResolver(AbstractResolver $modelResolver): LaravelRedisPaginator
+    public function setModelResolver(AbstractResolver $modelResolver): self
     {
         $this->modelResolver = $modelResolver;
 

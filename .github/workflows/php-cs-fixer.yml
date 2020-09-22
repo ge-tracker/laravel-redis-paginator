@@ -1,29 +1,59 @@
 name: Check & fix styling
 
-on: [push]
+on:
+  push:
+  pull_request:
+    paths:
+      - '**.php'
+      - '.php_cs'
+      - '.php_cs.dist'
+      - '**/phpcs.yml'
 
 jobs:
-    style:
-        runs-on: ubuntu-latest
+  style:
+    name: Fix code styling
+    runs-on: ubuntu-latest
 
-        steps:
-            -   name: Checkout code
-                uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-            -   name: Fix style
-                uses: docker://oskarstark/php-cs-fixer-ga
-                with:
-                    args: --config=.php_cs --allow-risky=yes
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, redis
+          coverage: none
+          ini-values: post_max_size=8M, short_open_tag=Off
+          tools: cs2pr
 
-            -   name: Extract branch name
-                shell: bash
-                run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-                id: extract_branch
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-            -   name: Commit changes
-                uses: stefanzweifel/git-auto-commit-action@v2.3.0
-                with:
-                    commit_message: Fix styling
-                    branch: ${{ steps.extract_branch.outputs.branch }}
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --dev --prefer-dist --optimize-autoloader
+
+      - name: Run PHP-CS-Fixer
+        run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v2.3.0
+        with:
+          commit_message: Apply PHP coding standards
+          branch: ${{ steps.extract_branch.outputs.branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
