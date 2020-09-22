@@ -1,22 +1,12 @@
 <?php
 
-namespace GeTracker\LaravelRedisPaginator\Tests\Database\Factories;
-
+use Faker\Generator;
 use GeTracker\LaravelRedisPaginator\Tests\Stubs\UserStub;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
-class UserStubFactory extends Factory
-{
-    protected $model = UserStub::class;
-
-    /**
-     * @inheritDoc
-     */
-    public function definition()
-    {
-        return [
-            'name' => $this->faker->name,
-            'uuid' => $this->faker->uuid,
-        ];
-    }
-}
+/* @var Illuminate\Database\Eloquent\Factory $factory */
+$factory->define(UserStub::class, function (Generator $faker) {
+    return [
+        'name' => $faker->name,
+        'uuid' => $faker->uuid,
+    ];
+});

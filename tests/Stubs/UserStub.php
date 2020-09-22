@@ -2,14 +2,10 @@
 
 namespace GeTracker\LaravelRedisPaginator\Tests\Stubs;
 
-use GeTracker\LaravelRedisPaginator\Tests\Database\Factories\UserStubFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class UserStub extends Model
 {
-    use HasFactory;
-
     protected $table = 'users';
 
     private static array $users = [
@@ -42,14 +38,6 @@ class UserStub extends Model
 
     public static function whereInTestArray(string $field, array $values)
     {
-        return array_filter(static::$users, fn ($user) => in_array($user[$field], $values, true));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected static function newFactory()
-    {
-        return UserStubFactory::new();
+        return array_filter(static::$users, fn($user) => in_array($user[$field], $values, true));
     }
 }
