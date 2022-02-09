@@ -5,9 +5,7 @@ on:
   pull_request:
     paths:
       - '**.php'
-      - '.php_cs'
-      - '.php_cs.dist'
-      - '**/phpcs.yml'
+      - '.php-cs-fixer.dist.php'
 
 jobs:
   style:
@@ -21,7 +19,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
+          php-version: 8.0
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, redis
           coverage: none
           ini-values: post_max_size=8M, short_open_tag=Off
